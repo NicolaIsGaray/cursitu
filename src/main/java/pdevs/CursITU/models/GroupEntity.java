@@ -26,9 +26,19 @@ public class GroupEntity {
     @Size(max = 6)
     private int limite;
 
-    @OneToMany(fetch = FetchType.EAGER, targetEntity = UserEntity.class, cascade = CascadeType.MERGE)
-    @JoinTable(name = "grupo_alumnos",
-        joinColumns = @JoinColumn(name = "grupo_id"),
-            inverseJoinColumns = @JoinColumn(name = "usuario_id"))
-    private Set<UserEntity> miembros;
+    @ManyToOne
+    @JoinColumn(name = "DNIProfesor", nullable = false)
+    private UserEntity profesorAdministrador;
+
+    @ManyToOne
+    @JoinColumn(name = "IDCurso", nullable = false)
+    private ClassroomEntity cursoPerteneciente;
+
+    @ManyToMany
+    @JoinTable(
+            name = "GrupoIntegraAlumnos",
+            joinColumns = @JoinColumn(name = "IDGrupo"),
+            inverseJoinColumns = @JoinColumn(name = "DNIAlumno")
+    )
+    private Set<UserEntity> alumnosIntegrantes;
 }

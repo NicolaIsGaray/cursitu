@@ -38,8 +38,8 @@ public class JwtUtils {
             Jwts.parser()
                     .verifyWith((SecretKey) getSignatureKey())
                     .build()
-                    .parseEncryptedClaims(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
             return true;
         }
         catch (Exception e) {
@@ -61,8 +61,8 @@ public class JwtUtils {
         return Jwts.parser()
                 .verifyWith((SecretKey) getSignatureKey())
                 .build()
-                .parseEncryptedClaims(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public Key getSignatureKey() {

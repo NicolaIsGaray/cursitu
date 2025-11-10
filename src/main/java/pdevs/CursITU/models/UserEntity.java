@@ -38,6 +38,18 @@ public class UserEntity {
     @Size(max = 8)
     private long dni;
 
+    @OneToMany(mappedBy = "profesor")
+    private Set<ClassroomEntity> cursosDictados;
+
+    @OneToMany(mappedBy = "profesorAdministrador")
+    private Set<GroupEntity> gruposAdministrados;
+
+    @ManyToMany(mappedBy = "alumnosInscritos")
+    private Set<ClassroomEntity> cursosCompuestos;
+
+    @ManyToMany(mappedBy = "alumnosIntegrantes")
+    private Set<GroupEntity> gruposIntegrados;
+
     @ManyToMany(fetch = FetchType.EAGER, targetEntity = RoleEntity.class, cascade = CascadeType.PERSIST)
     @JoinTable(name = "usuario_roles",
     joinColumns = @JoinColumn(name = "usuario_id"),

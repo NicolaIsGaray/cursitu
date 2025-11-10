@@ -26,9 +26,18 @@ public class ClassroomEntity {
     @NotBlank
     private String materia;
 
-    @OneToMany(fetch = FetchType.EAGER, targetEntity = UserEntity.class, cascade = CascadeType.MERGE)
-    @JoinTable(name = "curso_compuesto",
-    joinColumns = @JoinColumn(name = "curso_id"),
-    inverseJoinColumns = @JoinColumn(name = "usuario_id"))
-    private Set<UserEntity> integrantes;
+    @ManyToOne
+    @JoinColumn(name = "DNIProfesor", nullable = false)
+    private UserEntity profesor;
+
+    @OneToMany(mappedBy = "cursoPerteneciente")
+    private Set<GroupEntity> grupos;
+
+    @ManyToMany
+    @JoinTable(
+            name = "CursoCompuestoAlumnos",
+            joinColumns = @JoinColumn(name = "IDCurso"),
+            inverseJoinColumns = @JoinColumn(name = "DNIAlumno")
+    )
+    private Set<UserEntity> alumnosInscritos;
 }

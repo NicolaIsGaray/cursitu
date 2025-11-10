@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface UserRepo extends CrudRepository<UserEntity, Long> {
     Optional<UserEntity> findByDni(Long dni);
+    Optional<UserEntity> findByNombre(String nombre);
 }
