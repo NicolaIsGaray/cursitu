@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import pdevs.CursITU.controller.request.CreateUserDTO;
@@ -13,11 +12,11 @@ import pdevs.CursITU.models.RoleEntity;
 import pdevs.CursITU.models.UserEntity;
 import pdevs.CursITU.repositories.UserRepo;
 
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin(value = "http://localhost:8080/cursitu-app")
+@RequestMapping("/cursitu-app")
 @Slf4j
 public class UserController {
 
@@ -27,10 +26,25 @@ public class UserController {
     @Autowired
     private UserRepo userRepo;
 
-    @GetMapping("/accessAdmin")
-    @PreAuthorize("hasRole('ALUMNO')")
-    public String accessAdmin() {
-        return "Hola, has accedido con rol de ALUMNO";
+    @GetMapping("/user-info/{dni}")
+    public UserEntity getUserInfo(@PathVariable String dni) {
+        UserEntity user = this.userRepo.findByDni(dni).orElse(null);
+
+        if (user == null) {
+            log.info("\nUsuario no encontrado.\n");
+        }
+
+        return user;
+    }
+
+    @GetMapping("/usuarios")
+    public List<UserEntity> getUsers() {
+        return (List<UserEntity>) this.userRepo.findAll();
+    }
+
+    @GetMapping("/usuario/{id}")
+    public UserEntity getUserByID(@PathVariable Long id) {
+        return (UserEntity) this.userRepo.findById(id).orElse(null);
     }
 
     @PostMapping("/registrar-usuario")
@@ -40,20 +54,16 @@ public class UserController {
                         .role(ERole.valueOf(role))
                         .build())
                 .collect(Collectors.toSet());
+
         UserEntity userEntity = UserEntity.builder()
+                .email(createUserDTO.getEmail())
                 .nombre(createUserDTO.getNombre())
-                .clave(passwordEncoder.encode(createUserDTO.getPassword()))
+                .clave(passwordEncoder.encode(createUserDTO.getClave()))
+                .dni(createUserDTO.getDni())
                 .roles(roles)
                 .build();
 
         userRepo.save(userEntity);
-
         return ResponseEntity.ok(userEntity);
-    }
-
-    @DeleteMapping("/delete-user")
-    public String deleteUser(@RequestParam String id) {
-        userRepo.deleteById(Long.parseLong(id));
-        return "Usuario eliminado con id ".concat(id);
     }
 }

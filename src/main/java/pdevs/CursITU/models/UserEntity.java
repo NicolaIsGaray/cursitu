@@ -1,14 +1,15 @@
 package pdevs.CursITU.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -34,25 +35,39 @@ public class UserEntity {
     @NotBlank
     private String clave;
 
-    @NotBlank
-    @Size(max = 8)
-    private long dni;
+    @Column(name = "dni", nullable = false, unique = true)
+    private String dni;
 
-    @OneToMany(mappedBy = "profesor")
-    private Set<ClassroomEntity> cursosDictados;
+    private boolean isActive;
 
-    @OneToMany(mappedBy = "profesorAdministrador")
-    private Set<GroupEntity> gruposAdministrados;
+    private boolean hasGroup = false;
 
-    @ManyToMany(mappedBy = "alumnosInscritos")
-    private Set<ClassroomEntity> cursosCompuestos;
+    @EqualsAndHashCode.Exclude
+    @JsonIgnore
+    @ManyToMany(mappedBy = "alumnos", fetch = FetchType.LAZY)
+    private Set<ClassroomEntity> cursosComoAlumno = new HashSet<>();
 
-    @ManyToMany(mappedBy = "alumnosIntegrantes")
-    private Set<GroupEntity> gruposIntegrados;
+    @JsonIgnore
+    @ManyToMany(mappedBy = "profesores", fetch = FetchType.LAZY)
+    private Set<ClassroomEntity> cursosComoProfesor = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = SubjectsEntity.class, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "materias_profesor",
+            joinColumns = @JoinColumn(name = "profesor_id"),
+            inverseJoinColumns = @JoinColumn(name = "materias_id"))
+    private Set<SubjectsEntity> materias;
 
     @ManyToMany(fetch = FetchType.EAGER, targetEntity = RoleEntity.class, cascade = CascadeType.PERSIST)
     @JoinTable(name = "usuario_roles",
-    joinColumns = @JoinColumn(name = "usuario_id"),
+            joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "roles_id"))
-    private Set<RoleEntity> roles;
+    private Set<RoleEntity> roles = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    private EComission comision;
+
+    private boolean requestForTeacherRole = false;
+
+    @OneToMany(mappedBy = "invitedUser", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<InvitationsEntity> invitaciones = new HashSet<>();
 }

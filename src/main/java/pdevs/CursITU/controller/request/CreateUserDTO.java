@@ -20,7 +20,12 @@ public class CreateUserDTO {
     private String nombre;
 
     @NotBlank
-    private String password;
+    private String clave;
+
+    @NotBlank
+    private String dni;
 
     private Set<String> roles;
+
+    private Set<String> materias;
 }

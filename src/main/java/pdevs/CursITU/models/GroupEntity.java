@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -12,33 +13,33 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "grupo")
+@Table(name = "grupos")
 public class GroupEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @NotBlank
-    @Size(max = 20)
     private String nombre;
 
-    @NotBlank
-    @Size(max = 6)
     private int limite;
 
-    @ManyToOne
-    @JoinColumn(name = "DNIProfesor", nullable = false)
-    private UserEntity profesorAdministrador;
+    @NotBlank
+    private String comision;
 
-    @ManyToOne
-    @JoinColumn(name = "IDCurso", nullable = false)
-    private ClassroomEntity cursoPerteneciente;
-
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(
-            name = "GrupoIntegraAlumnos",
-            joinColumns = @JoinColumn(name = "IDGrupo"),
-            inverseJoinColumns = @JoinColumn(name = "DNIAlumno")
+            name = "grupo_miembros",
+            joinColumns = @JoinColumn(name = "grupo_id"),
+            inverseJoinColumns = @JoinColumn(name = "alumno_id")
     )
-    private Set<UserEntity> alumnosIntegrantes;
+    private Set<UserEntity> miembros = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "grupo_pendientes",
+            joinColumns = @JoinColumn(name = "grupo_id"),
+            inverseJoinColumns = @JoinColumn(name = "alumno_id")
+    )
+    private Set<UserEntity> pendientes = new HashSet<>();
 }

@@ -23,19 +23,27 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final JwtUtils jwtUtils;
 
-    public JwtAuthenticationFilter(JwtUtils jwtUtils) { this.jwtUtils = jwtUtils; }
+    public JwtAuthenticationFilter(JwtUtils jwtUtils) {
+        this.jwtUtils = jwtUtils;
+        // Configura explícitamente qué URL debe procesar este filtro
+        setFilterProcessesUrl("/cursitu-app/login");
+    }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
 
+        if (!request.getServletPath().equals("/cursitu-app/login")) {
+            return null; // No procesar si no es la URL de login
+        }
+
         UserEntity userEntity = null;
-        String nombre;
+        String dni;
         String clave;
 
         try {
             userEntity = new ObjectMapper().readValue(request.getInputStream(), UserEntity.class);
-            nombre = userEntity.getNombre();
+            dni = userEntity.getDni();
             clave = userEntity.getClave();
         }
         catch (Exception e) {
@@ -43,7 +51,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
 
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(nombre, clave);
+                new UsernamePasswordAuthenticationToken(dni, clave);
 
         return getAuthenticationManager().authenticate(authenticationToken);
     }
@@ -55,21 +63,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             Authentication authResult) throws IOException, ServletException {
 
         User user = (User) authResult.getPrincipal();
-        String token = jwtUtils.generateToken(user.getUsername());
+        String token = jwtUtils.generateToken(user.getUsername(), user.getAuthorities());
 
-        response.addHeader("Authorization", token);
+        response.addHeader("Authorization", "Bearer " + token);
 
         Map<String, Object> httpResponse = new HashMap<>();
         httpResponse.put("token", token);
         httpResponse.put("Message", "Autenticación Correcta");
-        httpResponse.put("Username", user.getUsername());
+        httpResponse.put("DNI", user.getUsername());
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
-
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().flush();
-
-        super.successfulAuthentication(request, response, chain, authResult);
     }
 }

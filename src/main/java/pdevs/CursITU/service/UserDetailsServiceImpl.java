@@ -21,23 +21,25 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private UserRepo userRepo;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String dni) throws UsernameNotFoundException {
 
-        UserEntity user = userRepo.findByNombre(username)
-                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe."));
+        UserEntity user = userRepo.findByDni(dni)
+                .orElseThrow(() -> new UsernameNotFoundException("El usuario con DNI " + dni + " no existe."));
 
         Collection<? extends GrantedAuthority> authorities =
                 user.getRoles().stream().map(
-                        role -> new SimpleGrantedAuthority("ROLE_".concat(role.getRole().name()))
-                )
+                                role -> new SimpleGrantedAuthority("ROLE_".concat(role.getRole().name()))
+                        )
                         .collect(Collectors.toSet());
 
-        return new User(user.getNombre(),
+        return new User(
+                user.getDni(),
                 user.getClave(),
                 true,
                 true,
                 true,
                 true,
-                authorities);
+                authorities
+        );
     }
 }
