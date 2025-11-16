@@ -1,5 +1,8 @@
 package pdevs.CursITU.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +15,7 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "materias")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class SubjectsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,11 +25,8 @@ public class SubjectsEntity {
 
     private String color;
 
-    private String year;
-
-    private String comision;
-
     @EqualsAndHashCode.Exclude
+    //@JsonManagedReference("teacher-subject")
     @ManyToMany(mappedBy = "materias", fetch = FetchType.LAZY)
     private Set<UserEntity> profesores = new HashSet<>();
 }

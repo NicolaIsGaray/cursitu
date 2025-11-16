@@ -18,5 +18,6 @@ public class RoleEntity {
     private long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(unique = true)
     private ERole role;
 }

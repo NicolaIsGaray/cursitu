@@ -67,4 +67,41 @@ public class ClassroomService {
         return classroomRepo.save(savedClassroom);
 
     }
+
+    @Transactional
+    public ClassroomEntity addStudentToClassroom(Long classroomId, Long studentId) {
+        ClassroomEntity classroom = classroomRepo.findById(classroomId)
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado con id: " + classroomId));
+        UserEntity student = userRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + studentId));
+
+        classroom.getAlumnos().add(student);
+        return classroomRepo.save(classroom);
+    }
+
+    @Transactional
+    public ClassroomEntity addTeacherToClassroom(Long classroomId, Long teacherId) {
+        ClassroomEntity classroom = classroomRepo.findById(classroomId)
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado con id: " + classroomId));
+        UserEntity teacher = userRepo.findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Profesor no encontrado con id: " + teacherId));
+
+        classroom.getProfesores().add(teacher);
+        return classroomRepo.save(classroom);
+    }
+
+    @Transactional
+    public void removeStudentFromClassroom(Long classroomId, Long studentId) {
+        classroomRepo.removeStudentFromClassroom(classroomId, studentId);
+    }
+
+    @Transactional
+    public void removeTeacherFromClassroom(Long classroomId, Long teacherId) {
+        classroomRepo.removeTeacherFromClassroom(classroomId, teacherId);
+    }
+
+    @Transactional
+    public void deleteClassroom(Long id) {
+        classroomRepo.deleteById(id);
+    }
 }

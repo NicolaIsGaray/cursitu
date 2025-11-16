@@ -7,9 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import pdevs.CursITU.models.*;
+import pdevs.CursITU.repositories.RoleRepo;
 import pdevs.CursITU.repositories.SubjectsRepo;
 import pdevs.CursITU.repositories.UserRepo;
 
+import java.util.Arrays;
 import java.util.Set;
 
 @SpringBootApplication
@@ -29,220 +31,66 @@ public class CursItuApplication {
     private SubjectsRepo subjectsRepo;
 
     @Bean
-    CommandLineRunner init() {
+    CommandLineRunner init(RoleRepo roleRepo, UserRepo userRepo, SubjectsRepo subjectsRepo, PasswordEncoder passwordEncoder) {
         return args -> {
-            UserEntity userEntity = UserEntity.builder()
-                    .email("gabidi@gmail.com")
-                    .nombre("Gabriel Di Cesare")
-                    .clave(passwordEncoder.encode("1234"))
-                    .dni("01010101")
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ADMIN.name()))
-                            .build()
-                    ))
-                    .comision(EComission.A)
-                    .build();
+            // 1. Asegurar que todos los roles existen de forma idempotente
+            Arrays.stream(ERole.values()).forEach(eRole -> {
+                if (roleRepo.findByRole(eRole).isEmpty()) {
+                    roleRepo.save(RoleEntity.builder().role(eRole).build());
+                }
+            });
 
-            UserEntity userEntity2 = UserEntity.builder()
-                    .email("mili@gmail.com")
-                    .nombre("Milagros Garcia")
-                    .dni("22222222")
-                    .clave(passwordEncoder.encode("4321"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.A)
-                    .build();
+            // 2. Cargar los roles para reutilizarlos
+            RoleEntity adminRole = roleRepo.findByRole(ERole.ADMIN).orElseThrow();
+            RoleEntity alumnoRole = roleRepo.findByRole(ERole.ALUMNO).orElseThrow();
+            RoleEntity profesorRole = roleRepo.findByRole(ERole.PROFESOR).orElseThrow();
 
-            UserEntity userEntity3 = UserEntity.builder()
-                    .email("lilenmimi@gmail.com")
-                    .nombre("Lilen Pereira")
-                    .dni("33333333")
-                    .clave(passwordEncoder.encode("6969"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.A)
-                    .build();
+            // 3. Crear usuarios de prueba (de forma idempotente)
+            createUserIfNotFound(userRepo, "01010101", "gabidi@gmail.com", "Gabriel Di Cesare", "1234", Set.of(adminRole), false);
+            createUserIfNotFound(userRepo, "22222222", "mili@gmail.com", "Milagros Garcia", "4321", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "33333333", "lilenmimi@gmail.com", "Lilen Pereira", "6969", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "44444444", "jorgeperez@gmail.com", "Jorge Perez", "jorge123", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "55555555", "prades@gmail.com", "Mauricio Prades", "prades1234", Set.of(alumnoRole), true);
+            createUserIfNotFound(userRepo, "66666666", "joaquindi@gmail.com", "Joaquin Diaz", "joa123", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "77777777", "pablogomez@gmail.com", "Pablo Gomez", "pablo1234", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "88888888", "cristgon@gmail.com", "Cristian Gonzalez", "cris2842", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "99999999", "mary@gmail.com", "Maria Gimenez", "mari231", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "10101010", "pedrol@gmail.com", "Pedro Sanchez", "pedro2123", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "11111111", "abril@gmail.com", "Abril Luna", "abril1142", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "12121212", "sol@gmail.com", "Sol Diaz", "sole24214", Set.of(alumnoRole), false);
+            createUserIfNotFound(userRepo, "13131313", "mati@gmail.com", "Matias Liberal", "mati1313", Set.of(profesorRole), false);
 
-            UserEntity userEntity4 = UserEntity.builder()
-                    .email("jorgeperez@gmail.com")
-                    .nombre("Jorge Perez")
-                    .dni("44444444")
-                    .clave(passwordEncoder.encode("jorge123"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.A)
-                    .build();
-
-            UserEntity userEntity5 = UserEntity.builder()
-                    .email("prades@gmail.com")
-                    .nombre("Mauricio Prades")
-                    .dni("55555555")
-                    .clave(passwordEncoder.encode("prades1234"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .requestForTeacherRole(true)
-                    .build();
-
-            UserEntity userEntity6 = UserEntity.builder()
-                    .email("joaquindi@gmail.com")
-                    .nombre("Joaquin Diaz")
-                    .dni("66666666")
-                    .clave(passwordEncoder.encode("joa123"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.A)
-                    .build();
-
-            UserEntity userEntity7 = UserEntity.builder()
-                    .email("pablogomez@gmail.com")
-                    .nombre("Pablo Gomez")
-                    .dni("77777777")
-                    .clave(passwordEncoder.encode("pablo1234"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.A)
-                    .build();
-
-            UserEntity userEntity8 = UserEntity.builder()
-                    .email("cristgon@gmail.com")
-                    .nombre("Cristian Gonzalez")
-                    .dni("88888888")
-                    .clave(passwordEncoder.encode("cris2842"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.A)
-                    .build();
-
-            UserEntity userEntity9 = UserEntity.builder()
-                    .email("mary@gmail.com")
-                    .nombre("Maria Gimenez")
-                    .dni("99999999")
-                    .clave(passwordEncoder.encode("mari231"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.B)
-                    .build();
-
-            UserEntity userEntity10 = UserEntity.builder()
-                    .email("pedrol@gmail.com")
-                    .nombre("Pedro Sanchez")
-                    .dni("10101010")
-                    .clave(passwordEncoder.encode("pedro2123"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.B)
-                    .build();
-
-            UserEntity userEntity11 = UserEntity.builder()
-                    .email("abril@gmail.com")
-                    .nombre("Abril Luna")
-                    .dni("11111111")
-                    .clave(passwordEncoder.encode("abril1142"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.B)
-                    .build();
-
-            UserEntity userEntity12 = UserEntity.builder()
-                    .email("sol@gmail.com")
-                    .nombre("Sol Diaz")
-                    .dni("12121212")
-                    .clave(passwordEncoder.encode("sole24214"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.ALUMNO.name()))
-                            .build()
-                    ))
-                    .comision(EComission.B)
-                    .build();
-
-            UserEntity userEntity13 = UserEntity.builder()
-                    .email("mati@gmail.com")
-                    .nombre("Matias")
-                    .dni("13131313")
-                    .clave(passwordEncoder.encode("mati1313"))
-                    .roles(Set.of(RoleEntity.builder()
-                            .role(ERole.valueOf(ERole.PROFESOR.name()))
-                            .build()
-                    ))
-                    .build();
-
-            userRepo.save(userEntity);
-            userRepo.save(userEntity2);
-            userRepo.save(userEntity3);
-            userRepo.save(userEntity4);
-            userRepo.save(userEntity5);
-            userRepo.save(userEntity6);
-            userRepo.save(userEntity7);
-            userRepo.save(userEntity8);
-            userRepo.save(userEntity9);
-            userRepo.save(userEntity10);
-            userRepo.save(userEntity11);
-            userRepo.save(userEntity12);
-            userRepo.save(userEntity13);
-
-
-            SubjectsEntity subject1 = SubjectsEntity.builder()
-                    .nombre("Sistemas Operativos Avanzados")
-                    .color("#DB2E09")
-                    .year("2026")
-                    .build();
-
-            SubjectsEntity subject2 = SubjectsEntity.builder()
-                    .nombre("Bases de Datos Avanzadas")
-                    .color("#A6B244")
-                    .year("2026")
-                    .build();
-
-            SubjectsEntity subject3 = SubjectsEntity.builder()
-                    .nombre("Metodología y Testing")
-                    .color("#6144B2")
-                    .year("2026")
-                    .build();
-
-            SubjectsEntity subject4 = SubjectsEntity.builder()
-                    .nombre("Lógica Matemática")
-                    .color("#12A654")
-                    .year("2026")
-                    .build();
-
-            SubjectsEntity subject5 = SubjectsEntity.builder()
-                    .nombre("Diseño de Software")
-                    .color("#122BA6")
-                    .year("2026")
-                    .build();
-
-            SubjectsEntity subject6 = SubjectsEntity.builder()
-                    .nombre("Interpretación de textos en inglés")
-                    .color("#CF069C")
-                    .year("2026")
-                    .build();
-
-            subjectsRepo.save(subject1);
-            subjectsRepo.save(subject2);
-            subjectsRepo.save(subject3);
-            subjectsRepo.save(subject4);
-            subjectsRepo.save(subject5);
-            subjectsRepo.save(subject6);
+            // 4. Crear materias de prueba (de forma idempotente)
+            createSubjectIfNotFound(subjectsRepo, "Sistemas Operativos Avanzados", "#DB2E09");
+            createSubjectIfNotFound(subjectsRepo, "Bases de Datos Avanzadas", "#A6B244");
+            createSubjectIfNotFound(subjectsRepo, "Metodología y Testing", "#6144B2");
+            createSubjectIfNotFound(subjectsRepo, "Lógica Matemática", "#12A654");
+            createSubjectIfNotFound(subjectsRepo, "Diseño de Software", "#122BA6");
+            createSubjectIfNotFound(subjectsRepo, "Interpretación de textos en inglés", "#CF069C");
         };
+    }
+
+    private void createUserIfNotFound(UserRepo userRepo, String dni, String email, String nombre, String clave, Set<RoleEntity> roles, boolean requestForTeacherRole) {
+        if (userRepo.findByDni(dni).isEmpty()) {
+            UserEntity user = UserEntity.builder()
+                    .dni(dni)
+                    .email(email)
+                    .nombre(nombre)
+                    .clave(passwordEncoder.encode(clave))
+                    .roles(roles)
+                    .requestForTeacherRole(requestForTeacherRole)
+                    .build();
+            userRepo.save(user);
+        }
+    }
+
+    private void createSubjectIfNotFound(SubjectsRepo subjectsRepo, String nombre, String color) {
+        if (subjectsRepo.findByNombre(nombre).isEmpty()) {
+            SubjectsEntity subject = SubjectsEntity.builder()
+                    .nombre(nombre)
+                    .color(color)
+                    .build();
+            subjectsRepo.save(subject);
+        }
     }
 }

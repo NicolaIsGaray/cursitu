@@ -1,6 +1,9 @@
 package pdevs.CursITU.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +21,7 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "usuario")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,28 +47,27 @@ public class UserEntity {
     private boolean hasGroup = false;
 
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
+    @JsonBackReference("classroom-student")
     @ManyToMany(mappedBy = "alumnos", fetch = FetchType.LAZY)
     private Set<ClassroomEntity> cursosComoAlumno = new HashSet<>();
 
-    @JsonIgnore
+    @JsonBackReference("classroom-teacher")
     @ManyToMany(mappedBy = "profesores", fetch = FetchType.LAZY)
     private Set<ClassroomEntity> cursosComoProfesor = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, targetEntity = SubjectsEntity.class, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = SubjectsEntity.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(name = "materias_profesor",
             joinColumns = @JoinColumn(name = "profesor_id"),
             inverseJoinColumns = @JoinColumn(name = "materias_id"))
     private Set<SubjectsEntity> materias;
 
-    @ManyToMany(fetch = FetchType.EAGER, targetEntity = RoleEntity.class, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = RoleEntity.class, cascade = CascadeType.MERGE)
     @JoinTable(name = "usuario_roles",
             joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "roles_id"))
     private Set<RoleEntity> roles = new HashSet<>();
 
-    @Enumerated(EnumType.STRING)
-    private EComission comision;
+    private String comision;
 
     private boolean requestForTeacherRole = false;
 
