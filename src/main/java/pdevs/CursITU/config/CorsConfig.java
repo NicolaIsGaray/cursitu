@@ -16,7 +16,7 @@ public class CorsConfig {
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:4200",
                 "http://localhost:8080",
-                "https://cursitu.onrender.com"
+                "https://cursitu-production.up.railway.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
