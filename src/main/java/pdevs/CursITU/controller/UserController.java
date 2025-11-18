@@ -4,6 +4,9 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import pdevs.CursITU.controller.request.CreateUserDTO;
@@ -45,6 +48,32 @@ public class UserController {
     @GetMapping("/usuario/{id}")
     public UserEntity getUserByID(@PathVariable Long id) {
         return (UserEntity) this.userRepo.findById(id).orElse(null);
+    }
+
+    @PutMapping("/editar-usuario/{id}")
+    @PreAuthorize("hasAnyRole('ALUMNO', 'PROFESOR', 'ADMIN')")
+    public ResponseEntity<?> updateUsuario(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateUserDTO createUserDTO,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        UserEntity userToUpdate = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+        boolean isSelf = userDetails.getUsername().equals(userToUpdate.getDni());
+
+        if (!isAdmin && !isSelf) {
+            return ResponseEntity.status(403).body("No tienes permiso para modificar este usuario.");
+        }
+
+        userToUpdate.setEmail(createUserDTO.getEmail());
+        userToUpdate.setNombre(createUserDTO.getNombre());
+        userToUpdate.setClave(passwordEncoder.encode(createUserDTO.getClave()));
+
+        userRepo.save(userToUpdate);
+        return ResponseEntity.ok(userToUpdate);
     }
 
     @PostMapping("/registrar-usuario")

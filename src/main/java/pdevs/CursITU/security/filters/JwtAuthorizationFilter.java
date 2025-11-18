@@ -37,7 +37,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
             String token = tokenHeader.substring(7);
 
-            if (jwtUtils.isTokenValid(token)) {
+            try {
                 String username = jwtUtils.getUsernameFromToken(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -47,6 +47,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                                 userDetails.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } catch (Exception e) {
+                log.error("Error al procesar el token JWT: {}", e.getMessage());
             }
         }
 

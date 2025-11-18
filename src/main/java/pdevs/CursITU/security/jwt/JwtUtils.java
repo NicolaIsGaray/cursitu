@@ -47,21 +47,6 @@ public class JwtUtils {
         return getClaims(token, claims -> claims.get("roles", List.class));
     }
 
-    public boolean isTokenValid(String token){
-        try {
-            Jwts.parser()
-                    .verifyWith((SecretKey) getSignatureKey())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-            return true;
-        }
-        catch (Exception e) {
-            log.error("Token inválido, error: ".concat(e.getMessage()));
-            return false;
-        }
-    }
-
     public String getUsernameFromToken(String token) {
         return getClaims(token, Claims::getSubject);
     }

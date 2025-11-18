@@ -16,8 +16,6 @@ import pdevs.CursITU.repositories.UserRepo;
 import pdevs.CursITU.service.classroom.ClassroomService;
 import pdevs.CursITU.service.user.TeacherService;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Map;
 
 @RestController
